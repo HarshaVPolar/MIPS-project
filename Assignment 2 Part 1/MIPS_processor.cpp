@@ -2,9 +2,9 @@
 using namespace std;
 
 int PC = 0;
-string memory[8][4000];
+string memory[4000];
 string instr;
-string opcode, rs, rt, rd, func, shftamt, imm, jmp, writedata, data;
+string opcode, rs, rt, rd, func, shftamt, imm, jmp, data;
 string regs[32] = {"0"};
 int rsvalue = 0, rtvalue = 0, immvalue = 0, rdvalue = 0;
 int regdst = 0, branch = 0, memread = 0, memtoreg = 0, memwrite = 0, regwrite = 0, alusrc = 0, zero = 0, alures = 0;
@@ -37,7 +37,7 @@ void fetch() {
     cout << "Fetching instruction" << endl;
     instr = "";
     for (int i = PC; i < PC + 4; i++) {
-        instr += memory[i / 4000][i % 4000];
+        instr += memory[i];
     }
     cout << "Instruction: " << instr << endl;
 }
@@ -247,35 +247,40 @@ void alu() {
     }
 }
 
-/* void memory_access() {
+void memory_access() {
     if (memwrite == 0 && memread == 1) {
-        cout << "Memory Acess ----->" << endl;
+        cout << "Memory Access ----->" << endl;
         string var;
         int i=0;
         while(i<4) {
-            var += M[alures+i];
+            var += memory[alures+i];
         }
-
+        data = var;
     }
-} */
+    else if(memwrite==1 && memread==0){
+        cout <<"Writing to memory"<<endl;
+        string var = decimalToTwosComplement(rtvalue,32);
+        memory[alures]=var.substr(0,8);
+        memory[alures+1]=var.substr(8,8);
+        memory[alures+2]=var.substr(16,8);
+        memory[alures+3]=var.substr(24,8);
+    }
+}
 
 void writeback() {
     if (regwrite == 1) {
         cout << "Writeback ----->" << endl;
         cout << "rd: " << rdvalue << endl;
-        cout << "MemtoReg: " << memtoreg << endl;
+        cout << memtoreg << endl;
         if (memtoreg == 1) {
             cout << "Data: " << data << endl;
-            writedata = data;
-            regs[rdvalue] = writedata;
-            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
-        }
+            regs[rdvalue] = data;
+        } 
         else {
-            cout << "Write data: " << decimalToTwosComplement(alures,32) << endl;
-            writedata = alures;
-            regs[rdvalue] = decimalToTwosComplement(writedata,32);
-            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
+            regs[rdvalue] = decimalToTwosComplement(alures,32);
+            cout << "Write: " << regs[rdvalue] << endl;
         }
+        cout << "Value after write back: " << regs[rdvalue] << endl;
     }
 }
 
