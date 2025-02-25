@@ -4,8 +4,8 @@ using namespace std;
 int PC = 0;
 string memory[4000] = {""};
 string instr;
-string opcode, rs, rt, rd, func, shftamt, imm, jmp, writedata, data;
-string regs[32] = {"0"};
+string opcode, rs, rt, rd, func, shftamt, imm, jmp, writedatas, datas;
+string regs[32] = {"0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"};
 int rsvalue = 0, rtvalue = 0, immvalue = 0, rdvalue = 0;
 int regdst = 0, branch = 0, memread = 0, memtoreg = 0, memwrite = 0, regwrite = 0, alusrc = 0, zero = 0, alures = 0;
 string aluop = "";
@@ -38,6 +38,8 @@ int twosComplementToDecimal(const string& binary) {
 
 void execute_jump() {
     int jumpAddress = (PC & 0xF0000000) | (stoi(jmp, nullptr, 2) << 2);
+    jumpAddress = jumpAddress - 0b10000000000000000000000 ;
+    jumpAddress += 1000;
     cout << "Jumping to address: " << jumpAddress << endl;
     PC = jumpAddress;
 }
@@ -80,7 +82,7 @@ void decode() {
         int temp = twosComplementToDecimal(imm);
         imm = decimalToTwosComplement(temp,32);
         immvalue = twosComplementToDecimal(imm);
-        cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << "Value of Imm: " << immvalue << endl;
+        cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << " Value of Imm: " << immvalue << endl;
     }
     else if (opcode == "100011") {
         cout << "LOAD:" << endl;
@@ -88,20 +90,20 @@ void decode() {
         int temp = twosComplementToDecimal(imm);
         imm = decimalToTwosComplement(temp,32);
         immvalue = twosComplementToDecimal(imm);
-        cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << "Value of Imm: " << immvalue << endl;
+        cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << " Value of Imm: " << immvalue << endl;
     }
     else if (opcode == "000000") {
         if (func == "100000") {
             cout << "ADD:" << endl;
             rsvalue = twosComplementToDecimal(regs[stoi(rs, nullptr, 2)]);
             rtvalue = twosComplementToDecimal(regs[stoi(rt, nullptr, 2)]);
-            cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << endl;
+            cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << endl;
         }
         else if (func == "100010") {
             cout << "SUB:" << endl;
             rsvalue = twosComplementToDecimal(regs[stoi(rs, nullptr, 2)]);
             rtvalue = twosComplementToDecimal(regs[stoi(rt, nullptr, 2)]);
-            cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << endl;
+            cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << endl;
         }
     }
     else if (opcode == "011100") {
@@ -109,7 +111,7 @@ void decode() {
         func = "000010";
         rsvalue = twosComplementToDecimal(regs[stoi(rs, nullptr, 2)]);
         rtvalue = twosComplementToDecimal(regs[stoi(rt, nullptr, 2)]);
-        cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << endl;
+        cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << endl;
     }
     else if (opcode == "000100") {
         cout << "BEQ:" << endl;
@@ -118,7 +120,7 @@ void decode() {
         int temp = twosComplementToDecimal(imm);
         imm = decimalToTwosComplement(temp,32);
         immvalue = twosComplementToDecimal(imm);
-        cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << "Value of Imm: " << immvalue << endl;
+        cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << " Value of Imm: " << immvalue << endl;
     }
     else if (opcode == "000101") {
         cout << "BNE:" << endl;
@@ -127,7 +129,7 @@ void decode() {
         int temp = twosComplementToDecimal(imm);
         imm = decimalToTwosComplement(temp, 32);
         immvalue = twosComplementToDecimal(imm);
-        cout << "Value of RS: " << rsvalue << "Value of RT: " << rtvalue << "Value of Imm: " << immvalue << endl;
+        cout << " Value of RS: " << rsvalue << " Value of RT: " << rtvalue << " Value of Imm: " << immvalue << endl;
     } 
     else if (opcode == "000010") {
         cout << "JUMP:" << endl;
@@ -268,8 +270,9 @@ void memory_access() {
         int i=0;
         while(i<4) {
             var += memory[alures+i];
+            i++;
         }
-        data = var;
+        datas = var;
     }
     else if(memwrite==1 && memread==0){
         cout <<"Writing to memory"<<endl;
@@ -288,14 +291,14 @@ void writeback() {
         cout << "rd: " << rdvalue << endl;
         cout << memtoreg << endl;
         if (memtoreg == 1) {
-            cout << "Data: " << data << endl;
-            regs[rdvalue] = data;
+            cout << "datas: " << datas << endl;
+            regs[rdvalue] = datas;
         } 
         else {
             regs[rdvalue] = decimalToTwosComplement(alures,32);
             cout << "Write: " << regs[rdvalue] << endl;
         }
-        cout << "Value after write back: " << regs[rdvalue] << endl;
+        cout << " Value after write back: " << regs[rdvalue] << endl;
     }
 }
 
@@ -317,13 +320,12 @@ void run_MIPS(){
 }
 
 int main(){
-    binarycode = "1000110000001000000000000000000010001100000010010000000000000100100011000000101000000000000010001000110000001011000000000000100000000000000000000110000000100010000100010010000000000000000001000111000101001000010100000000001000000001001010110100100000100010000100010010110000000000000000010000100000010000000000000000011010101100000010100000000000001100";
+    binarycode = "10001100000100000000000000000000100011000001100000000000000001000000001000011000010000000010000010001100000010110000000000000100100011000000110000000000000001000001000100001100000000000000001101110001011011000101100000000010000000011001100001100000001000000000100000010000000000000000010110101100000010110000000000001000";
     parsebinarycode();
-    memory[8] = "1";
-    memory[0] = "11";
-    memory[4] = "101";
+    memory[0] = "01001";
+    memory[4] = "01";
     run_MIPS();
-    string output = memory[12]+memory[13]+memory[14]+memory[15];
+    string output = memory[8]+memory[9]+memory[10]+memory[11];
     int outint = twosComplementToDecimal(output);
     cout<<outint<<endl;
 }
