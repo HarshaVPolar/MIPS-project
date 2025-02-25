@@ -2,9 +2,9 @@
 using namespace std;
 
 int PC = 0;
-string memory[4000];
+string memory[4000] = {""};
 string instr;
-string opcode, rs, rt, rd, func, shftamt, imm, jmp, data;
+string opcode, rs, rt, rd, func, shftamt, imm, jmp, writedata, data;
 string regs[32] = {"0"};
 int rsvalue = 0, rtvalue = 0, immvalue = 0, rdvalue = 0;
 int regdst = 0, branch = 0, memread = 0, memtoreg = 0, memwrite = 0, regwrite = 0, alusrc = 0, zero = 0, alures = 0;
@@ -32,6 +32,11 @@ void execute_jump() {
     PC = jumpAddress;
 }
 
+void cond_jump() {
+    if(zero==1){
+        PC = PC +4 + immval;
+    }
+}
 
 void fetch() {
     cout << "Fetching instruction" << endl;
@@ -52,6 +57,7 @@ void decode() {
     func = instr.substr(26, 6);
     imm = instr.substr(16, 16);
     jmp = instr.substr(6, 26);
+    zero = 0;
 
     rsvalue = twosComplementToDecimal(regs[stoi(rs, nullptr, 2)]);
     rtvalue = twosComplementToDecimal(regs[stoi(rt, nullptr, 2)]);
@@ -116,8 +122,6 @@ void decode() {
     else if (opcode == "000010") {
         cout << "JUMP:" << endl;
         execute_jump();
-        //jmp = "0000" + jmp + "00";
-        //immvalue = twosComplementToDecimal(jmp);
     }
 }
 
@@ -253,34 +257,58 @@ void memory_access() {
         string var;
         int i=0;
         while(i<4) {
-            var += memory[alures+i];
+            var += M[alures+i];
         }
         data = var;
     }
     else if(memwrite==1 && memread==0){
         cout <<"Writing to memory"<<endl;
-        string var = decimalToTwosComplement(rtvalue,32);
-        memory[alures]=var.substr(0,8);
-        memory[alures+1]=var.substr(8,8);
-        memory[alures+2]=var.substr(16,8);
-        memory[alures+3]=var.substr(24,8);
+        string var = decimalToTwosComplement(rtval,32);
+        memory[alures]=var[0:8];
+        memory[alures+1]=var[8:16];
+        memory[alures+2]=var[16:24];
+        memory[alures+3]=var[24:32];
     }
-}
+
+} 
 
 void writeback() {
     if (regwrite == 1) {
         cout << "Writeback ----->" << endl;
         cout << "rd: " << rdvalue << endl;
-        cout << memtoreg << endl;
+        cout << "MemtoReg: " << memtoreg << endl;
         if (memtoreg == 1) {
             cout << "Data: " << data << endl;
-            regs[rdvalue] = data;
-        } 
-        else {
-            regs[rdvalue] = decimalToTwosComplement(alures,32);
-            cout << "Write: " << regs[rdvalue] << endl;
+            writedata = data;
+            regs[rdvalue] = writedata;
+            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
         }
-        cout << "Value after write back: " << regs[rdvalue] << endl;
+        else {
+            cout << "Write data: " << decimalToTwosComplement(alures,32) << endl;
+            writedata = alures;
+            regs[rdvalue] = decimalToTwosComplement(writedata,32);
+            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
+        }
     }
 }
 
+void run_MIPS(){
+    PC = 1000;
+    while(PC<=4000&&memory[PC]!=""){
+        cout<< "PC: "<<PC<<endl;
+        fetch();
+        decode();
+        ctrl_circuit();
+        alu_ctrl();
+        alu();
+        cond_jump();
+        memory_access();
+        writeback();
+        if(opcode != "000010"&&zero!=1)
+        PC +=4;
+    }
+}
+
+int main(){
+    
+}
