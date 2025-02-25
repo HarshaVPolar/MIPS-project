@@ -10,6 +10,16 @@ int rsvalue = 0, rtvalue = 0, immvalue = 0, rdvalue = 0;
 int regdst = 0, branch = 0, memread = 0, memtoreg = 0, memwrite = 0, regwrite = 0, alusrc = 0, zero = 0, alures = 0;
 string aluop = "";
 string aluin = "";
+string binarycode="";
+
+void parsebinarycode(){
+    int i =1000;
+    while(binarycode!=""&&i<4000){
+        memory[i] = binarycode.substr(0,8);
+        binarycode = binarycode.erase(0,8);
+        i++;
+    }
+}
 
 string decimalToTwosComplement(int num, int size) {
     if (num >= 0) {
@@ -34,7 +44,7 @@ void execute_jump() {
 
 void cond_jump() {
     if(zero==1){
-        PC = PC +4 + immval;
+        PC = PC +4 + immvalue;
     }
 }
 
@@ -257,17 +267,17 @@ void memory_access() {
         string var;
         int i=0;
         while(i<4) {
-            var += M[alures+i];
+            var += memory[alures+i];
         }
         data = var;
     }
     else if(memwrite==1 && memread==0){
         cout <<"Writing to memory"<<endl;
-        string var = decimalToTwosComplement(rtval,32);
-        memory[alures]=var[0:8];
-        memory[alures+1]=var[8:16];
-        memory[alures+2]=var[16:24];
-        memory[alures+3]=var[24:32];
+        string var = decimalToTwosComplement(rtvalue,32);
+        memory[alures]=var.substr(0,8);
+        memory[alures+1]=var.substr(8,8);
+        memory[alures+2]=var.substr(16,8);
+        memory[alures+3]=var.substr(24,8);
     }
 
 } 
@@ -276,19 +286,16 @@ void writeback() {
     if (regwrite == 1) {
         cout << "Writeback ----->" << endl;
         cout << "rd: " << rdvalue << endl;
-        cout << "MemtoReg: " << memtoreg << endl;
+        cout << memtoreg << endl;
         if (memtoreg == 1) {
             cout << "Data: " << data << endl;
-            writedata = data;
-            regs[rdvalue] = writedata;
-            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
-        }
+            regs[rdvalue] = data;
+        } 
         else {
-            cout << "Write data: " << decimalToTwosComplement(alures,32) << endl;
-            writedata = alures;
-            regs[rdvalue] = decimalToTwosComplement(writedata,32);
-            cout << "After writeback, value at destination: " << regs[rdvalue] << endl;
+            regs[rdvalue] = decimalToTwosComplement(alures,32);
+            cout << "Write: " << regs[rdvalue] << endl;
         }
+        cout << "Value after write back: " << regs[rdvalue] << endl;
     }
 }
 
@@ -310,5 +317,13 @@ void run_MIPS(){
 }
 
 int main(){
-    
+    binarycode = "1000110000001000000000000000000010001100000010010000000000000100100011000000101000000000000010001000110000001011000000000000100000000000000000000110000000100010000100010010000000000000000001000111000101001000010100000000001000000001001010110100100000100010000100010010110000000000000000010000100000010000000000000000011010101100000010100000000000001100";
+    parsebinarycode();
+    memory[8] = "1";
+    memory[0] = "11";
+    memory[4] = "101";
+    run_MIPS();
+    string output = memory[12]+memory[13]+memory[14]+memory[15];
+    int outint = twosComplementToDecimal(output);
+    cout<<outint<<endl;
 }
