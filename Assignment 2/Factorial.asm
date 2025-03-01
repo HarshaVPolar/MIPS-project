@@ -1,11 +1,11 @@
     .text
     .globl main
 main:
-    lw $s0, 1020($0)  
-    lw $t8, 1004($0)	
+    lw $s0, 0($0)  
+    lw $t8, 4($0)	
     add $t0, $s0, $t8
-    lw $t3, 1004($0)     
-    lw $t4, 1004($0)
+    lw $t3, 4($0)     
+    lw $t4, 4($0)
     
     factorial_loop:
         beq $t0, $t4, end_loop  
