@@ -291,20 +291,22 @@ void writeback() {
         cout << "rd: " << rdvalue << endl;
         cout << memtoreg << endl;
         if (memtoreg == 1) {
-            cout << "datas: " << datas << endl;
+            cout << "Data : " << datas << endl;
             regs[rdvalue] = datas;
         } 
         else {
             regs[rdvalue] = decimalToTwosComplement(alures,32);
             cout << "Write: " << regs[rdvalue] << endl;
         }
-        cout << " Value after write back: " << regs[rdvalue] << endl;
+        cout << "Value after write back: " << regs[rdvalue] << endl;
     }
 }
 
 void run_MIPS(){
     PC = 1000;
-    while(PC<=4000&&memory[PC]!=""){
+    while(PC<=4000&&memory[PC]!="")
+    {
+        cout << "--------------------------------------------------------------------------" << endl;
         cout<< "PC: "<<PC<<endl;
         fetch();
         decode();
