@@ -216,56 +216,57 @@ void ctrl_circuit() {
 }
 
 void alu_ctrl() {
-    if (aluop == "00") {
-        aluin = "010";
-    }
-    else if (aluop == "10" && func == "100000") {
-        aluin = "010";
-    }
-    else if (aluop == "10" && func == "100010") {
-        aluin = "011";
-    }
-    else if (aluop == "10" && func == "000010") {
-        aluin = "111";
-    }
-    else if (aluop == "01") {
-        aluin = "100";
+    switch (stoi(aluop, nullptr, 2)) {
+        case 0b00:
+            aluin = "010";
+            break;
+        case 0b10:
+            if (func == "100000") aluin = "010";
+            else if (func == "100010") aluin = "011";
+            else if (func == "000010") aluin = "111";
+            break;
+        case 0b01:
+            aluin = "100";
+            break;
     }
 }
+
 
 void alu() {
-    if (opcode != "000010"&&opcode != "000100"&&opcode != "000101")
-    cout << "ALU ---->" << endl <<endl ;
+    if (opcode != "000010" && opcode != "000100" && opcode != "000101")
+        cout << "ALU ---->" << endl << endl;
 
-    if (aluin == "010") {
-        if (alusrc == 1) {
-            alures = rsvalue + immvalue;
-            cout << "After Add: " << alures << endl;
-        }
-        else if (alusrc == 0) {
-            alures = rsvalue + rtvalue;
-            cout << "After Add: " << alures << endl;
-        }
+    switch (stoi(aluin, nullptr, 2)) {
+        case 0b010:
+            if (alusrc == 1) {
+                alures = rsvalue + immvalue;
+                cout << "After Add: " << alures << endl;
+            } else {
+                alures = rsvalue + rtvalue;
+                cout << "After Add: " << alures << endl;
+            }
+            break;
+        case 0b011:
+            if (alusrc == 0) {
+                alures = rsvalue - rtvalue;
+                cout << "After Sub: " << alures << endl;
+            }
+            break;
+        case 0b111:
+            if (alusrc == 0) {
+                alures = rsvalue * rtvalue;
+                cout << "After Mul: " << alures << endl;
+            }
+            break;
+        case 0b100:
+            immvalue *= 4;
+            if (zero == 1)
+                cout << "Immediate: " << immvalue << endl;
+            break;
     }
-    else if (aluin == "011") {
-        if (alusrc == 0) {
-            alures = rsvalue - rtvalue;
-            cout << "After Sub: " << alures << endl;
-        }
-    }
-    else if (aluin == "111") {
-        if (alusrc == 0) {
-            alures = rsvalue*rtvalue;
-            cout << "After Mul: " << alures << endl;
-        }
-    }
-    else if (aluin == "100") {
-        immvalue = immvalue*4;
-        if(zero==1)
-        cout << "Immediate: " << immvalue << endl;
-    }
-    cout<<endl;
+    cout << endl;
 }
+
 
 void memory_access() {
     if (memwrite == 0 && memread == 1) {
@@ -329,10 +330,10 @@ void run_MIPS(){
 }
 
 int main(){
-    binarycode = "";
-    a=0;    //This lods to memory space "0"
-    b=0;    //This lods to memory space "4"
-    c=0;    //This lods to memory space "8"
+    binarycode = "1000110000001000000000000000000010001100000010010000000000000100100011000000101000000000000010001000110000001011000000000000100000000000000000000110000000100010000100010010000000000000000001000111000101001000010100000000001000000001001010110100100000100010000100010010110000000000000000010000100000010000000000000000011010101100000010100000000000010000";
+    a=3;    //This loads to memory space "0"
+    b=5;    //This loads to memory space "4"
+    c=1;    //This loads to memory space "8"
     parsebinarycode();
     run_MIPS();
     cout<<"The output = "<<outint<<endl;
